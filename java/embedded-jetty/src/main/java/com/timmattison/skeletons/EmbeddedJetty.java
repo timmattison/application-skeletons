@@ -7,14 +7,17 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 import javax.servlet.DispatcherType;
+import java.io.File;
+import java.net.BindException;
 import java.net.URL;
 import java.util.EnumSet;
+import java.util.logging.Logger;
 
 /**
  * This is an embedded Jetty container that can serve up static assets and handle GWT-RPC requests
  */
 public class EmbeddedJetty {
-    private static final boolean debug = false;
+    public static final boolean debug = false;
 
     public static void main(String[] args) throws Throwable {
         Injector injector;
@@ -32,7 +35,16 @@ public class EmbeddedJetty {
             injector = Guice.createInjector(new EmbeddedJettyProductionModule());
         }
 
+        Logger logger = injector.getInstance(Logger.class);
+
         String webXmlLocation = getWarUri(injector) + "/WEB-INF/web.xml";
+
+        File webXml = new File(webXmlLocation);
+
+        if(!webXml.exists()) {
+            logger.info("Couldn't find web.xml.  Did you specify the full path?  Is it in your content directory?");
+            System.exit(0);
+        }
 
         // Create an embedded Jetty server on port 8080
         Server server = new Server(8080);
@@ -51,8 +63,14 @@ public class EmbeddedJetty {
         server.setHandler(webAppContext);
 
         // And start it up
-        server.start();
-        server.join();
+        try {
+            server.start();
+            server.join();
+        } catch (BindException e) {
+            logger.info("Failed to start, another application is bound on this port");
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     private static String getWarUri(Injector injector) {
@@ -69,7 +87,7 @@ public class EmbeddedJetty {
             resourceBase = externalForm;
         } else {
             // No, we are debugging
-            resourceBase = "./war";
+            resourceBase = "./web";
         }
 
         return resourceBase;

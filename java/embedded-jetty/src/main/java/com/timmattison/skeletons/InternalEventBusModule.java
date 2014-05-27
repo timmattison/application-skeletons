@@ -21,6 +21,7 @@ public abstract class InternalEventBusModule extends AbstractModule {
         this.eventBus = eventBus;
     }
 
+    // From: http://spin.atomicobject.com/2012/01/13/the-guava-eventbus-on-guice/
     protected void bindSubscribersToEventBus(final EventBus eventBus) {
         bindListener(Matchers.any(), new TypeListener() {
             public <I> void hear(TypeLiteral<I> typeLiteral, TypeEncounter<I> typeEncounter) {

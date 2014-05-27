@@ -20,26 +20,30 @@ public class RestletSkeleton {
         // Create the injector
         Injector injector = Guice.createInjector(new RestletModule(inboundRoot));
 
-        // Create a factory to instantiate the RESTlet application
-        RestletApplicationFactory restletApplicationFactory = injector.getInstance(RestletApplicationFactory.class);
-
         try {
-            // Create a new Component.
+            // Create a new Component
             Component component = new Component();
 
             // Add a new HTTP server listening on the specified port
             component.getServers().add(Protocol.HTTP, 8000);
 
-            // Attach the sample application.
-            component.getDefaultHost().attach(restletApplicationFactory.create());
+            // Required to get the inbound root working
+            component.getClients().add(Protocol.FILE);
 
-            // Start the component.
+            // Attach the application
+            RestletApplication restletApplication = injector.getInstance(RestletApplication.class);
+            component.getDefaultHost().attach(restletApplication.getApplication());
+
+            // Start the component
             component.start();
         } catch (Exception e) {
-            // Something is wrong.
+            // Something is wrong
             e.printStackTrace();
         }
 
-        Thread.sleep(100000);
+        RunningMonitor runningMonitor = injector.getInstance(RunningMonitor.class);
+
+        // Wait until someone signals we are stopping
+        runningMonitor.waitUntilStopping();
     }
 }

@@ -1,4 +1,4 @@
-package com.timmattison.skeletons;
+package com.timmattison.skeletons.resources;
 
 import org.apache.commons.io.IOUtils;
 import org.restlet.representation.Representation;
@@ -22,7 +22,7 @@ public abstract class StaticInternalResource extends ServerResource {
 
     private String getInternalResource(String name) throws IOException {
         // Get the resource URL from inside the JAR
-        URL url = this.getClass().getResource("/" + name);
+        URL url = this.getClass().getResource(name);
 
         // Open an input stream from the URL
         InputStream inputStream = url.openStream();

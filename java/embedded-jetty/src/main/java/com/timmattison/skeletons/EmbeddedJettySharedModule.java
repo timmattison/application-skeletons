@@ -1,6 +1,13 @@
 package com.timmattison.skeletons;
 
 import com.google.common.eventbus.EventBus;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
+import com.timmattison.skeletons.servlets.eventbus.events.factories.ExternalProcessEventFactory;
+import com.timmattison.skeletons.servlets.eventbus.events.factories.GenericEventFactory;
+import com.timmattison.skeletons.servlets.eventbus.events.implementations.BasicExternalProcessEvent;
+import com.timmattison.skeletons.servlets.eventbus.events.implementations.BasicGenericEvent;
+import com.timmattison.skeletons.servlets.eventbus.events.interfaces.ExternalProcessEvent;
+import com.timmattison.skeletons.servlets.eventbus.events.interfaces.GenericEvent;
 
 import javax.inject.Inject;
 import java.util.logging.*;
@@ -20,6 +27,10 @@ public class EmbeddedJettySharedModule extends InternalEventBusModule {
 
         // Bind all subscribers to the event bus automatically
         bindSubscribersToEventBus(eventBus);
+
+        // Install the event factories
+        install(new FactoryModuleBuilder().implement(GenericEvent.class, BasicGenericEvent.class).build(GenericEventFactory.class));
+        install(new FactoryModuleBuilder().implement(ExternalProcessEvent.class, BasicExternalProcessEvent.class).build(ExternalProcessEventFactory.class));
     }
 
     public static void configureLogger() {
